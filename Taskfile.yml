@@ -1,0 +1,43 @@
+# https://taskfile.dev
+
+version: "3"
+
+vars:
+  CANVAS_DIR: canvas
+  COLOUR_DIR: colour
+  DEMO_DIR: demo
+  OUT_DIR: docs
+  CANVAS_TARGET_FILE: gogi.wasm
+  DEMO_TARGET_FILE: demo.wasm
+
+tasks:
+  default:
+    desc: Lists available tasks
+    cmds:
+      - task --list-all
+    silent: true
+  updateDependencies:
+    desc: Updates Go dependencies
+    cmds:
+      - go get -u ./...
+    silent: true
+  build:
+    desc: Builds the demo with TinyGo
+    cmds:
+      - tinygo build -o {{.OUT_DIR}}/{{.DEMO_TARGET_FILE}} -no-debug -opt=2 -target wasm ./{{.DEMO_DIR}}/.
+    silent: true
+  test:
+    desc: Runs the unit tests for all the modules that have tests
+    cmds:
+      - tinygo test -target wasm ./...
+  updateWasmExec:
+    desc: Updates the wasm_exec.js file
+    cmds:
+      - cp $(tinygo env TINYGOROOT)/targets/wasm_exec.js ./{{.OUT_DIR}}/wasm_exec_tiny.js
+    silent: true
+  run:
+    desc: Builds and runs the project - you can open a browser to see the result
+    cmds:
+      - task: build
+      - http-server ./{{.OUT_DIR}}/ -p 9000 -c-1
+    silent: true
