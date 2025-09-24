@@ -26,6 +26,7 @@ var (
 	sineTable  [SINE_TABLE_SIZE]float64
 	sqrtTable  []float64
 	radToIndex float64
+	palette    [256]colour.Colour
 )
 
 // ----------------------------------------------------------------------------
@@ -96,6 +97,15 @@ func initGame() {
 	for i := range sqrtTable {
 		sqrtTable[i] = math.Sqrt(float64(i))
 	}
+
+	// Initialize color palette
+	for i := range 256 {
+		colorInput := float64(i)
+		r := clampByte(fastSin(colorInput*0.02+0.0)*127.0 + 128.0)
+		g := clampByte(fastSin(colorInput*0.02+2.0)*64.0 + 190.0)
+		b := clampByte(fastSin(colorInput*0.02+4.0)*127.0 + 128.0)
+		palette[i] = colour.NewColour(r, g, b, 255)
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -134,32 +144,31 @@ func update() {
 	for y := range renderHeight {
 		ny := float64(y) * 0.045
 		for x := range renderWidth {
-			// Normalize x and y coordinates to a smaller range for sine wave calculations.
 			nx := float64(x) * 0.045
 
-			// --- Plasma Calculation ---
 			val1 := fastSin(nx + scenario.t)
 			val2 := fastSin(ny + scenario.t*0.5)
 			val3 := fastSin((nx+ny)*0.7 + scenario.t*0.8)
 
-			// Wave 4: Based on distance from center and time (Corrected & Optimized)
 			dx := float64(x - renderWidthHalf)
 			dy := float64(y - renderHeightHalf)
 			dist_sq := dx*dx + dy*dy
 			dist := fastSqrt(dist_sq) * 0.01
 			val4 := fastSin(dist + scenario.t*0.3)
 
-			// Combine the waves
-			plasmaValue := (val1 + val2 + val3 + val4) / 4.0 // Normalize to -1.0 to 1.0 range
+			plasmaValue := (val1 + val2 + val3 + val4) / 4.0
 
-			// --- Map Plasma Value to Color ---
-			colorInput := (plasmaValue + 1.0) * 128.0
-			r := clampByte(fastSin(colorInput*0.02+0.0)*127.0 + 128.0)
-			g := clampByte(fastSin(colorInput*0.02+2.0)*64.0 + 190.0)
-			b := clampByte(fastSin(colorInput*0.02+4.0)*127.0 + 128.0)
-			a := uint8(255)
+			// Map plasma value to palette index
+			// plasmaValue is in [-1, 1]. Map it to [0, 255].
+			idx := int((plasmaValue + 1.0) * 127.5)
+			if idx > 255 {
+				idx = 255
+			}
+			if idx < 0 {
+				idx = 0
+			}
 
-			scenario.renderBuffer.ColourPutPixel(x, y, colour.NewColour(r, g, b, a))
+			scenario.renderBuffer.ColourPutPixel(x, y, palette[idx])
 		}
 	}
 
