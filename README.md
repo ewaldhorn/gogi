@@ -10,5 +10,9 @@ I'm using TinyGo and you can check the task file to see the commands used to cre
 
 The pixel buffer and the rest of it is useful for other graphics effects as well, give it a whirl!
 
+## The Goal
+
+I'm going to turn this into a package, promise. It sort of is already, I just haven't bothered releasing it yet, I want to clean up one or two things.
+
 ## Task
 Gogi uses [Task](https://taskfile.dev/) to make life easier.
