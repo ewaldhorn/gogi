@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gogi Plasma Demo</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background-color: #1a1a1a;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        box-sizing: border-box;
+        color: #e0e0e0;
+      }
+
+      a {
+        color: #fefefe;
+      }
+
+      .container {
+        background-color: #2c2c2c;
+        padding: 10px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+
+      .infoSection {
+        display: flex;
+        flex-direction: row;
+      }
+
+      h1 {
+        color: #f0f0f0;
+        margin-bottom: 20px;
+        font-size: 0.85em;
+      }
+
+      canvas {
+        border: 2px solid #555;
+        background-color: #000;
+        display: block;
+        margin: 0 auto 20px auto;
+        max-width: 90vw;
+        height: auto;
+        aspect-ratio: 800/600;
+        box-sizing: border-box;
+      }
+
+      @media (max-width: 768px) {
+        h1 {
+          font-size: 0.75em;
+        }
+        .container {
+          padding: 6px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1><a href="https://nofuss.co.za/toys">Gogi Plasma Demo v1.00</a></h1>
+      <canvas id="myCanvas" width="800" height="600"></canvas>
+      <div class="infoSection">
+        <span id="fpsCounter" style="padding-right: 20px">FPS: 0</span>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      const canvas = document.getElementById("myCanvas");
+      const ctx = canvas.getContext("2d");
+      const fpsCounterElement = document.getElementById("fpsCounter");
+
+      const TARGET_FPS = 60;
+      const FRAME_DURATION = 1000 / TARGET_FPS;
+
+      let wasmInstance, wasmMemory, pixelBufferPointer, pixelBufferLength;
+
+      let frameCount = 0;
+      let lastFpsUpdateTime = performance.now();
+      const fpsUpdateInterval = 1000;
+      let lastFrameTime = 0;
+
+      async function initWasm() {
+        try {
+          const response = await fetch("demo.wasm");
+          const buffer = await response.arrayBuffer();
+          /*
+           Since we're not using the offical wasm_exec script, we need to provide
+           some functionality for the wasm module.
+           */
+          const wasiImports = {
+            wasi_snapshot_preview1: {
+              proc_exit: (code) => {
+                console.log(`WASM exited with code: ${code}`);
+              },
+              fd_write: (fd, iovs_ptr, iovs_len, nwritten_ptr) => {
+                console.log(`WASM fd_write called for fd ${fd}`);
+                return 0;
+              },
+              random_get: (buf_ptr, buf_len) => {
+                const memoryView = new Uint8Array(wasmMemory.buffer);
+                for (let i = 0; i < buf_len; i++) {
+                  memoryView[buf_ptr + i] = Math.floor(Math.random() * 256);
+                }
+                return 0;
+              },
+            },
+          };
+
+          const wasm = await WebAssembly.instantiate(buffer, {
+            env: {},
+            ...wasiImports,
+          });
+
+          wasmInstance = wasm.instance;
+          wasmMemory = wasmInstance.exports.memory;
+
+          wasmInstance.exports.initGame();
+
+          pixelBufferPointer = wasmInstance.exports.getBufferPointer();
+          pixelBufferLength = wasmInstance.exports.getBufferLength();
+
+          requestAnimationFrame(renderLoop);
+        } catch (error) {
+          console.error("Error loading or instantiating WebAssembly:", error);
+        }
+      }
+
+      let imageData, pixelData;
+      function renderLoop(currentTime) {
+        if (!wasmInstance) {
+          requestAnimationFrame(renderLoop);
+          return;
+        }
+
+        const deltaTime = currentTime - lastFrameTime;
+        if (deltaTime < FRAME_DURATION) {
+          requestAnimationFrame(renderLoop);
+          return;
+        }
+        lastFrameTime = currentTime - (deltaTime % FRAME_DURATION);
+
+        wasmInstance.exports.update();
+
+        if (!pixelData) {
+          // only need to create this buffer once, then we will keep it around
+          pixelData = new Uint8ClampedArray(
+            wasmMemory.buffer,
+            pixelBufferPointer,
+            pixelBufferLength,
+          );
+          imageData = new ImageData(pixelData, canvas.width, canvas.height);
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+
+        // FPS Calculation
+        frameCount++;
+        const elapsedTime = currentTime - lastFpsUpdateTime;
+
+        if (elapsedTime >= fpsUpdateInterval) {
+          const fps = (frameCount / (elapsedTime / 1000)).toFixed(0);
+          fpsCounterElement.textContent = `FPS: ${fps}`;
+          frameCount = 0;
+          lastFpsUpdateTime = currentTime;
+        }
+
+        requestAnimationFrame(renderLoop);
+      }
+
+      window.onload = initWasm;
+    </script>
+  </body>
+</html>
