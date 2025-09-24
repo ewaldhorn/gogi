@@ -1,2 +1,3 @@
-# gogi
-Go Graphics Interface - Lame name, I know.
+# GOGI
+
+Go Graphics Interface - Lame name, I know, I know.
