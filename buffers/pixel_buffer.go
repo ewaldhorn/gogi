@@ -1,22 +1,31 @@
 package buffers
 
-import "github.com/ewaldhorn/gogi/colour"
+import (
+	"github.com/ewaldhorn/gogi/colour"
+)
+
+// ------------------------------------------------------------------------------------------------
+const RGBABytesPerPixel = 4
 
 // ------------------------------------------------------------------------------------------------
 type PixelBuffer struct {
 	width, height int
-	bufferSize    int
 	pixels        []uint8
 	bytesPerPixel int
 }
 
 // ------------------------------------------------------------------------------------------------
 func NewPixelBuffer(width, height int, buffer []uint8) *PixelBuffer {
+	expectedSize := width * height * RGBABytesPerPixel
+
+	if len(buffer) != expectedSize {
+		panic("buffer size mismatch")
+	}
 	newBuffer := make([]uint8, len(buffer))
 	copy(newBuffer, buffer)
 
 	return &PixelBuffer{
-		width: width, height: height, pixels: newBuffer, bytesPerPixel: 4, bufferSize: len(newBuffer),
+		width: width, height: height, pixels: newBuffer, bytesPerPixel: RGBABytesPerPixel,
 	}
 }
 
