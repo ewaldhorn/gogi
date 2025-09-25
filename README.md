@@ -1,6 +1,6 @@
 # GOGI
 
-Go Graphics Interface - Lame name, I know, I know.
+Go Graphics Interface - Lame name, I know, I know... But BGI anyone? 
 
 ![Screenshot](screenshot.png)
 
