@@ -35,6 +35,12 @@ func ClampUInt8(initial uint8, diff int) uint8 {
 	return uint8(newValue)
 }
 
+// ------------------------------------------------------------------------------------------------
+// MapValue maps a value from one range to another.
+func MapValue(value, inMin, inMax, outMin, outMax float64) float64 {
+	return (value-inMin)*(outMax-outMin)/(inMax-inMin) + outMin
+}
+
 /*
 // TestClampUInt8 contains test cases for the ClampUInt8 function.
 func TestClampUInt8(t *testing.T) {

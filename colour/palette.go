@@ -1,5 +1,7 @@
 package colour
 
+import "github.com/ewaldhorn/gogi/utils"
+
 // ------------------------------------------------------------------------------------------------
 func GetFirePalette() []Colour {
 	fire := make([]Colour, 256)
@@ -7,7 +9,7 @@ func GetFirePalette() []Colour {
 	for i := range 256 {
 		l := float64(i) / 255.0
 
-		hDeg := MapValue(float64(i), 0, 255, 0, 85)
+		hDeg := utils.MapValue(float64(i), 0, 255, 0, 85)
 		h := hDeg / 360.0
 
 		s := 1.0
@@ -27,7 +29,7 @@ func GetAllRedPalette() []Colour {
 	for i := range 256 {
 		l := float64(i) / 255.0
 
-		hDeg := MapValue(float64(i), 0, 255, 0, 119)
+		hDeg := utils.MapValue(float64(i), 0, 255, 0, 119)
 		h := hDeg / 360.0
 
 		s := 1.0

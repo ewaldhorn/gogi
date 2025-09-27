@@ -4,8 +4,12 @@ import (
 	"math/rand/v2"
 )
 
+// ------------------------------------------------------------------------------------------------
 const MAX_COLOUR_VALUE uint8 = 255
 const BYTES_PER_PIXEL = 4
+const FADE_RATE_R = 0.98
+const FADE_RATE_G = 0.93
+const FADE_RATE_B = 0.93
 
 // ------------------------------------------------------------------------------------------------
 type Colour struct {
@@ -20,9 +24,9 @@ func (c *Colour) IsEmpty() bool {
 
 // ------------------------------------------------------------------------------------------------
 func (c *Colour) FadeALittle() {
-	c.R = uint8(float32(c.R) * 0.98)
-	c.G = uint8(float32(c.G) * 0.93)
-	c.B = uint8(float32(c.B) * 0.93)
+	c.R = uint8(float32(c.R) * FADE_RATE_R)
+	c.G = uint8(float32(c.G) * FADE_RATE_G)
+	c.B = uint8(float32(c.B) * FADE_RATE_B)
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -44,7 +48,7 @@ func NewColourWhite() Colour {
 
 // ------------------------------------------------------------------------------------------------
 func NewColourBlack() Colour {
-	return Colour{A: MAX_COLOUR_VALUE}
+	return Colour{R: 0, G: 0, B: 0, A: MAX_COLOUR_VALUE}
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -69,7 +73,7 @@ func NewRandomColour() Colour {
 // Built using information from https://en.wikipedia.org/wiki/Grayscale
 // and https://stackoverflow.com/questions/42516203/converting-rgba-image-to-grayscale-golang
 func (c *Colour) ConvertToGrayscale() {
-	shadeOfGray := uint8((0.299*(float64(c.R)) + 0.587*(float64(c.G)) + 0.144*(float64(c.B))) / 256)
+	shadeOfGray := uint8(0.299*float64(c.R) + 0.587*float64(c.G) + 0.114*float64(c.B))
 
 	c.R = shadeOfGray
 	c.G = shadeOfGray
@@ -121,10 +125,4 @@ func HSLToRGB(h, s, l float64) (r, g, b uint8) {
 	}
 
 	return uint8(red * 255), uint8(green * 255), uint8(blue * 255)
-}
-
-// ------------------------------------------------------------------------------------------------
-// MapValue maps a value from one range to another.
-func MapValue(value, inMin, inMax, outMin, outMax float64) float64 {
-	return (value-inMin)*(outMax-outMin)/(inMax-inMin) + outMin
 }
