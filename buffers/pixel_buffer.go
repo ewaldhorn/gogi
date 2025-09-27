@@ -94,8 +94,8 @@ func blendColors(fg, bg colour.Colour) colour.Colour {
 	}
 
 	outR := (uint32(fg.R)*fgA + (uint32(bg.R)*bgA*(255-fgA))/255) / outA
-	outG := (uint32(fg.G)*fgA + (uint32(fg.G)*bgA*(255-fgA))/255) / outA
-	outB := (uint32(fg.B)*fgA + (uint32(fg.B)*bgA*(255-fgA))/255) / outA
+	outG := (uint32(fg.G)*fgA + (uint32(bg.G)*bgA*(255-fgA))/255) / outA
+	outB := (uint32(fg.B)*fgA + (uint32(bg.B)*bgA*(255-fgA))/255) / outA
 
 	return colour.Colour{
 		R: uint8(outR),
