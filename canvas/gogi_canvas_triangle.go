@@ -6,7 +6,7 @@ import "math"
 func (m *GogiCanvas) DrawTriangle(p1, p2, p3 Point) {
 	m.DrawLine(p1.X, p1.Y, p2.X, p2.Y)
 	m.DrawLine(p2.X, p2.Y, p3.X, p3.Y)
-	m.DrawLine(p3.X, p3.Y, p1.X, p1.X)
+	m.DrawLine(p3.X, p3.Y, p1.X, p1.Y)
 }
 
 // ------------------------------------------------------------------------------------------------
