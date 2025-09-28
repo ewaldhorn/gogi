@@ -5,7 +5,7 @@ import (
 
 	"github.com/ewaldhorn/gogi/colour"
 )
-
+// ------------------------------------------------------------------------------------------------
 func TestDrawRectangle(t *testing.T) {
 	// 1. Create a new canvas for testing.
 	canvas := NewCanvas(10, 10)

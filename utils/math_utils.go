@@ -36,6 +36,19 @@ func ClampUInt8(initial uint8, diff int) uint8 {
 }
 
 // ------------------------------------------------------------------------------------------------
+func ClampIntTo(initial int, min int, max int) int {
+	if initial < min {
+		return min
+	}
+
+	if initial > max {
+		return max
+	}
+
+	return initial
+}
+
+// ------------------------------------------------------------------------------------------------
 // MapValue maps a value from one range to another.
 func MapValue(value, inMin, inMax, outMin, outMax float64) float64 {
 	return (value-inMin)*(outMax-outMin)/(inMax-inMin) + outMin

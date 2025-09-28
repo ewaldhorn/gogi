@@ -6,9 +6,10 @@ import (
 	"github.com/ewaldhorn/gogi/buffers"
 	"github.com/ewaldhorn/gogi/canvas"
 	"github.com/ewaldhorn/gogi/colour"
+	"github.com/ewaldhorn/gogi/utils"
 )
 
-// ----------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
 const (
 	// canvas properties
 	CANVAS_WIDTH    = 800
@@ -18,7 +19,7 @@ const (
 	SINE_TABLE_SIZE = 4096 * 4 // Adjust for desired precision vs. memory
 )
 
-// ----------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
 var (
 	gameCanvas *canvas.GogiCanvas
 	scenario   Scenario
@@ -29,20 +30,20 @@ var (
 	palette    [256]colour.Colour
 )
 
-// ----------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
 type Scenario struct {
 	t                         float64
 	renderWidth, renderHeight int
 	renderBuffer              buffers.PixelBuffer
 }
 
-// ----------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
 func fastSin(val float64) float64 {
 	idx := int(val*radToIndex) & (SINE_TABLE_SIZE - 1)
 	return sineTable[idx]
 }
 
-// ----------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
 func fastSqrt(val float64) float64 {
 	if val < 0 || int(val) >= len(sqrtTable) {
 		return math.Sqrt(val)
@@ -50,12 +51,12 @@ func fastSqrt(val float64) float64 {
 	return sqrtTable[int(val)]
 }
 
-// ----------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
 func main() {
 	// The main function is empty as initGame and update are exported for WASM.
 }
 
-// ----------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
 func clampByte(val float64) uint8 {
 	if val < 0 {
 		return 0
@@ -66,7 +67,7 @@ func clampByte(val float64) uint8 {
 	return uint8(val)
 }
 
-// ----------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
 //
 //export initGame
 func initGame() {
@@ -108,7 +109,7 @@ func initGame() {
 	}
 }
 
-// ----------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
 // getBufferPointer returns the memory address of the start of the pixelBuffer.
 // This allows JavaScript to locate the buffer within the WebAssembly memory.
 //
@@ -117,7 +118,7 @@ func getBufferPointer() uintptr {
 	return gameCanvas.GetBufferPointer()
 }
 
-// ----------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
 // getBufferLength returns the total size of the pixelBuffer in bytes.
 // JavaScript needs this to know how much memory to read.
 //
@@ -126,7 +127,7 @@ func getBufferLength() uint32 {
 	return gameCanvas.GetBufferLength()
 }
 
-// ----------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
 //
 //export update
 func update() {
@@ -160,13 +161,7 @@ func update() {
 
 			// Map plasma value to palette index
 			// plasmaValue is in [-1, 1]. Map it to [0, 255].
-			idx := int((plasmaValue + 1.0) * 127.5)
-			if idx > 255 {
-				idx = 255
-			}
-			if idx < 0 {
-				idx = 0
-			}
+			idx := utils.ClampIntTo(int((plasmaValue + 1.0) * 127.5), 0, 255)
 
 			scenario.renderBuffer.ColourPutPixel(x, y, palette[idx])
 		}
